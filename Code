@@ -1,0 +1,132 @@
+import pygame
+import pygame.time
+import random
+
+largura_tela = 800
+altura_tela = 600
+
+preto = (0, 0, 0)
+branco = (255, 255, 255)
+
+quadrados_iniciais = 20
+
+pygame.init()
+
+
+
+tela = pygame.display.set_mode((largura_tela, altura_tela))
+
+#Criando um temporizador
+clock = pygame.time.Clock()
+
+
+############   Classe Quadradinhos Aleatoriamente ############
+
+
+class Quadradinho():
+    
+    def __init__(self):
+        self.largura = 30
+        self.altura = 30
+        self.x = random.randint(0, largura_tela-self.largura)
+        self.y = random.randint(0, altura_tela-self.altura)
+        self.area = pygame.Rect(self.x, self.y, self.largura, self.altura)
+        self.cor = (random.randint(20, 255), random.randint(20, 255), random.randint(20, 255))
+        
+    def desenha(self, tela):
+        pygame.draw.rect(tela, self.cor, self.area)
+
+##################################################################
+
+############ Criando, Desenhando Quadradinhos ####################
+lista = []
+for i in range(0, quadrados_iniciais):
+    q = Quadradinho()
+    q.desenha(tela)
+    lista.append(q)
+##################################################################
+
+
+def mostra_tempo(tempo, pontos):
+    font = pygame.font.Font(None, 24)
+    text = font.render("Tempo: " + str(tempo) + "s | Pontuação: " + str(pontos), 1, branco)
+    textpos = text.get_rect(centerx=tela.get_width()/2)
+    tela.blit(text, textpos)
+
+
+def mostra_pontuacao_final(tela, pontos):
+    tela.fill(preto) # Limpa tela
+    font = pygame.font.Font(None, 36)
+    text = font.render("Pontuação: " + str(pontos) + " quadradinhos", 1, branco)
+    textpos = text.get_rect(center=(tela.get_width()/2, tela.get_height()/2))
+    tela.blit(text, textpos)
+
+
+conta_clocks = 0
+
+
+pontos = 0
+
+
+conta_segundos = 30
+
+mostra_tempo(conta_segundos, pontos)
+terminou = False
+
+
+##################################################################
+############### Atualizações das cenas dinâmicas #################
+while not terminou:
+    
+    
+    pygame.display.update()
+    
+    
+    clock.tick(60)
+    
+    
+    
+    
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            terminou = True
+        
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        
+            pos = pygame.mouse.get_pos()
+        
+            for q in lista:
+                if q.area.collidepoint(pos):
+                    lista.remove(q)
+                    pontos = pontos + 1
+
+#################################################################
+######### Contar o tempo e Atualizar os quadradinhos ############
+    conta_clocks = conta_clocks + 1
+    
+    # A cada 50 cont_clocks, temos 1s (0,02s x 50 = 1s)
+    if conta_clocks == 60:
+        if conta_segundos >= 0:
+            conta_segundos = conta_segundos - 1
+        conta_clocks = 0
+        q = Quadradinho()
+        lista.append(q)
+        
+    if conta_segundos >= 0:
+        tela.fill(preto)
+        for i in lista:
+            i.desenha(tela)
+            mostra_tempo(conta_segundos, pontos)
+
+    else:
+
+        mostra_pontuacao_final(tela, pontos)
+        for q in lista:
+            lista.remove(q)   
+    
+##################################################################
+    
+
+pygame.display.quit()
+
+pygame.quit()
